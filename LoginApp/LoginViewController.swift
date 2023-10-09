@@ -10,23 +10,12 @@ import UIKit
 struct User {
     let login: String
     let password: String
-    let person: Person
     
     static func getUserData() -> User {
         User(
             login: "User",
-            password: "Password",
-            person: Person(name: "Nikita", surname: "Fedotov")
+            password: "Password"
         )
-    }
-}
-
-struct Person {
-    let name: String
-    let surname: String
-    
-    var fullName: String {
-        "\(name) \(surname)"
     }
 }
 
@@ -41,25 +30,23 @@ final class LoginViewController: UIViewController {
     
     // MARK: Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let tabBarController = segue.destination as! UITabBarController
-        let welcomeVC = tabBarController.viewControllers?.first as! WelcomeViewController
-        welcomeVC.user = user
-
+        guard let settingWelcomeVC = segue.destination as? WelcomeViewController else { return }
+        settingWelcomeVC.user = userNameTextField.text
+    }
+    
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        guard userNameTextField.text == user.login, passwordTextField.text == user.password else {
+            showAlert(title: "Invalid login or password",
+                      message: "Please, enter correct login and password",
+                      textField: passwordTextField)
+            return false
+        }
+        
+        return true
     }
     
     // MARK: IBActions
     @IBAction func logInPressed() {
-        guard
-            userNameTextField.text == user.login,
-            passwordTextField.text == user.password
-        else {
-            showAlert(title: "Invalid login or password",
-                      message: "Please, enter correct login and password",
-                      textField: passwordTextField)
-            return
-        }
-        
-        performSegue(withIdentifier: "logIn", sender: nil)
     }
     
     @IBAction func forgotUserNamePressed() {
@@ -79,6 +66,7 @@ final class LoginViewController: UIViewController {
     
 }
 
+
 // MARK: - Alert Controller
 extension LoginViewController {
     private func showAlert(title: String, message: String, textField: UITextField? = nil) {
@@ -97,15 +85,6 @@ extension LoginViewController: UITextFieldDelegate {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
         view.endEditing(true)
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == userNameTextField {
-            passwordTextField.becomeFirstResponder()
-        } else {
-            logInPressed()
-        }
-        return true
     }
 }
 
